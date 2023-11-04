@@ -3,30 +3,37 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func
 from datetime import datetime
 
+
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:carmen@localhost:5432/postgres'
 app.config['SECRET_KEY'] = "carmen"
 db = SQLAlchemy(app)
 #flask run
-class User(db.Model):
-    UserID = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
+class Users(db.Model):
+    user_id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), nullable=False)
+    password = db.Column(db.String(50), nullable=False)
     
-    def __init__(self, name):
-        self.name = name
+    def __init__(self, username, password):
+        self.username = username
+        self.password = password
 
 class Transaction(db.Model):
-    TransactionID = db.Column(db.Integer, primary_key=True)
+    transaction_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, default=0)
     date = db.Column(db.Date, default=func.now())
-    amount = db.Column(db.Integer, nullable=False);
-    description = db.Column(db.String(50), nullable=False);
+    amount = db.Column(db.Integer, nullable=False)
+    category = db.Column(db.String(50), nullable=False)
+    name = db.Column(db.String(50), nullable=False)
 
-    def __init__(self, amount, description):
-        self.amount = amount,
-        self.description = description
+    def __init__(self, amount, category, name):
+        self.amount = amount
+        self.category = category
+        self.name = name
 
 with app.app_context():
     db.create_all()
+    
 
 @app.route('/')
 def hello_world():
@@ -36,10 +43,10 @@ def hello_world():
 def new_transaction():
     current_time = datetime.now().strftime("%Y-%m-%d")
     if request.method == 'POST':
-        if not request.form['amount'] or not request.form['description']:
+        if not request.form['amount'] or not request.form['category'] or not request.form['name']:
             flash('Please enter all the fields', 'error')
         else:
-            new_transaction = Transaction(request.form['amount'], request.form['description'])
+            new_transaction = Transaction(request.form['amount'], request.form['category'], request.form['name'])
             db.session.add(new_transaction)
             db.session.commit()
 

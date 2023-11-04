@@ -2,7 +2,7 @@
 <html>
    <body>
       <button onclick="goToHome()">Go to Home Screen</button>
-      <h3>Add a person</h3>
+      <h3>Add a Transaction</h3>
       <hr/>
       
       {%- for category, message in get_flashed_messages(with_categories = true) %}
@@ -12,13 +12,16 @@
       {%- endfor %}
       
       <form action="" method="post">
+         <label for="name"> Name </label><br>
+         <input type="text" name="name" placeholder="" /><br>
+
          <label for="amount"> Amount </label><br>
          <input type="text" name="amount" placeholder="0.00" /><br>
 
-         <label for="description"> Description of Purchase </label><br>
-         <input type="text" name="description" placeholder="" /><br>
+         <label for="category"> Category of Purchase </label><br>
+         <input type="text" name="category" placeholder="" /><br>
 
-         <label for="current-time"> Current Time </label><br>
+         <label for="current-time"> Time </label><br>
          <input type="text" name="current-time" value="{{ current_time }}" readonly /><br>
 
          <input type="submit" value="Submit" />
