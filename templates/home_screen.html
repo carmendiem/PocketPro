@@ -11,5 +11,25 @@
       window.location.href = '/newtransaction';
     }
   </script>
+  <table>
+    <thead>
+        <tr>
+            <th>name</th>
+            <th>amount</th>
+            <th>category</th>
+            <th>date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for tran in trans %}
+            <tr>
+                <td>{{ tran.name }}</td>
+                <td>{{ tran.amount }}</td>
+                <td>{{ tran.category }}</td>
+                <td>{{ tran.date }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
 </body>
 </html>
