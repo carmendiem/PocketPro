@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <script src="https://kit.fontawesome.com/6d839466d9.js" crossorigin="anonymous"></script>
   <title>Home Screen</title>
 </head>
 <body>
@@ -27,9 +28,46 @@
                 <td>{{ tran.amount }}</td>
                 <td>{{ tran.category }}</td>
                 <td>{{ tran.date }}</td>
+                <td>
+                  <button onclick="editTransaction(this)" data-transaction-id="{{ tran.transaction_id }}" amount-id="{{ tran.amount }}" category-id="{{ tran.category}}" date-id="{{ tran.date }}">
+                       <i class="fa-solid fa-pen-to-square"></i>
+                  </button>
+               </td>
+
+                <form action="{{ url_for('delete_transaction', tran_id=tran.transaction_id) }}" method="post">
+                  <td><button type="submit"><i class="fa-solid fa-trash"></i></button></td>
+                </form>
             </tr>
         {% endfor %}
     </tbody>
 </table>
+    <!-- Edit Form (Hidden by default) -->
+    <div id="editForm" style="display: none;">
+      <h2>Edit Transaction</h2>
+      <form method="POST" action="{{ url_for('edit_transaction') }}">
+          <input type="hidden" name="tran_id" id="tranId">
+          <label for="amount">Amount:</label>
+          <input type="text" name="amount" id="editAmount" required><br>
+          <label for="category">Category:</label>
+          <input type="text" name="category" id="editCategory" required><br>
+          <label for="category">Date (yyyy-mm-dd):</label>
+          <input type="text" name="date" id="editDate" required><br>
+          <button type="submit">Save changes</button>
+      </form>
+  </div>
+
+  <script>
+    function editTransaction(button) {
+      var transactionId = button.getAttribute('data-transaction-id');
+      var amount = button.getAttribute('amount-id');
+      var category = button.getAttribute('category-id');
+      var date = button.getAttribute('date-id');
+      document.getElementById('tranId').value = transactionId;
+      document.getElementById('editAmount').value = amount;
+      document.getElementById('editCategory').value = category;
+      document.getElementById('editDate').value = date;
+      document.getElementById('editForm').style.display = 'block';
+    }
+</script>
 </body>
 </html>

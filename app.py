@@ -51,3 +51,26 @@ def new_transaction():
 
             return redirect(url_for('homepage'))
     return render_template('add_transaction.html') #, current_time=current_time)
+
+@app.route('/delete/<int:tran_id>', methods=['POST'])
+def delete_transaction(tran_id):
+    Transaction.query.filter_by(transaction_id=tran_id).delete()
+    db.session.commit()
+    return redirect(url_for('homepage'))
+
+@app.route('/edit_transaction', methods=['GET', 'POST'])
+def edit_transaction():
+    tran_id = request.form.get('tran_id')
+    transaction = Transaction.query.get(tran_id)
+
+    if request.method == 'POST' and transaction:
+        transaction.amount = request.form['amount']
+        transaction.category = request.form['category']
+        date_str = request.form['date']
+        try:
+            date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except ValueError:
+            return "Invalid date format"
+        transaction.date = date
+        db.session.commit()
+        return redirect(url_for('homepage'))
