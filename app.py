@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, flash, url_for
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
 from sqlalchemy.sql import func
 from datetime import datetime
 
@@ -30,7 +31,11 @@ with app.app_context():
 @app.route('/')
 def homepage():
     trans = Transaction.query.all()
-    return render_template('home_screen.html', trans=trans)
+    sumsql = text('SELECT sum(amount) FROM Transaction')
+    with db.engine.connect() as conn:
+        result = conn.execute(sumsql)
+    totalsum = result.fetchone()
+    return render_template('home_screen.html', trans=trans, totalsum=totalsum[0])
 
 @app.route('/newtransaction', methods=['GET', 'POST'])
 def new_transaction():
@@ -44,7 +49,6 @@ def new_transaction():
                  date = datetime.strptime(date_str, '%Y-%m-%d').date()
             except ValueError:
                  return "Invalid date format"
-            print(date)
             new_transaction = Transaction(request.form['amount'], request.form['category'], request.form['name'], date=date)
             db.session.add(new_transaction)
             db.session.commit()
@@ -74,3 +78,14 @@ def edit_transaction():
         transaction.date = date
         db.session.commit()
         return redirect(url_for('homepage'))
+    
+@app.route('/report', methods=['GET', 'POST'])
+def report():
+    trans = Transaction.query.all()
+    selected_month = request.args.get('month')
+    sumsql = text('SELECT sum(amount), category FROM Transaction WHERE EXTRACT(MONTH FROM date) = :selected_month GROUP BY category')
+    sumsql = sumsql.bindparams(selected_month=selected_month)
+    with db.engine.connect() as conn:
+        result = conn.execute(sumsql)
+        grouped_sum_by_category = result.fetchall()
+    return render_template('report.html', trans=trans, results=grouped_sum_by_category, month=selected_month)

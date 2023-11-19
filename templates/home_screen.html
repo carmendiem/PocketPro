@@ -5,7 +5,7 @@
   <title>Home Screen</title>
 </head>
 <body>
-  <h1>Home screen</h1>
+  <h1>Total Expenses: ${{ totalsum }}</h1>
   <button onclick="addTransaction()">Add a transaction</button>
   <script>
     function addTransaction() {
@@ -68,6 +68,13 @@
       document.getElementById('editDate').value = date;
       document.getElementById('editForm').style.display = 'block';
     }
+</script>
+
+<button onclick="report()">See price breakdown</button>
+<script>
+  function report() {
+    window.location.href = '/report';
+  }
 </script>
 </body>
 </html>
