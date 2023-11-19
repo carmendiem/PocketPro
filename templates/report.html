@@ -2,63 +2,124 @@
 <html>
 
 <body>
-    <button onclick="goToHome()">Go to Home Screen</button>
-    <h3>Report for month {{ month }}</h3>
-    <hr />
-    <script>
-        function goToHome() {
-            window.location.href = '/';
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            /* 100% of the viewport height */
         }
-    </script>
-    <form id="monthForm">
-        <label for="month" method="GET" action="/report">Select Month:</label>
-        <select id="month" name="month">
-            <option value="1">January</option>
-            <option value="2">February</option>
-            <option value="3">March</option>
-            <option value="4">April</option>
-            <option value="5">May</option>
-            <option value="6">June</option>
-            <option value="7">July</option>
-            <option value="8">August</option>
-            <option value="9">September</option>
-            <option value="10">October</option>
-            <option value="11">November</option>
-            <option value="12">December</option>
-        </select>
-        <button type="submit">Get Summary</button>
-    </form>
-    <div id="summaryResult"></div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-        var selectedMonth = "{{ month }}";  // Get the month value from Flask
-        var monthSelect = document.getElementById('month');
 
-        // Set the default value in the dropdown
-        for (var i = 0; i < monthSelect.options.length; i++) {
-            if (monthSelect.options[i].value === selectedMonth) {
-                monthSelect.options[i].selected = true;
-                break;
+        .half {
+            flex: 1;
+            /* Each half takes up equal space */
+            box-sizing: border-box;
+            padding: 20px;
+            border: 1px solid #ccc;
+        }
+    </style>
+    <div class="half">
+        <button onclick="goToHome()">Go to Home Screen</button>
+        <h3>Report for month {{ month }}</h3>
+        <hr />
+        <script>
+            function goToHome() {
+                window.location.href = '/';
             }
-        }
-    });
-    </script>
-    <table>
-        <thead>
-            <tr>
-                <th>amount</th>
-                <th>category</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for row in results %}
-                <tr>
-                    <td>{{ row[0] }}</td>
-                    <td>{{ row[1] }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</body>
+        </script>
+        <form id="monthForm">
+            <label for="month" method="GET" action="/report">Select Month:</label>
+            <select id="month" name="month">
+                <option value="1">January</option>
+                <option value="2">February</option>
+                <option value="3">March</option>
+                <option value="4">April</option>
+                <option value="5">May</option>
+                <option value="6">June</option>
+                <option value="7">July</option>
+                <option value="8">August</option>
+                <option value="9">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+            </select>
+            <button type="submit">Get Summary</button>
+        </form>
+        <div id="summaryResult"></div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var selectedMonth = "{{ month }}";  // Get the month value from Flask
+                var monthSelect = document.getElementById('month');
 
+                // Set the default value in the dropdown
+                for (var i = 0; i < monthSelect.options.length; i++) {
+                    if (monthSelect.options[i].value === selectedMonth) {
+                        monthSelect.options[i].selected = true;
+                        break;
+                    }
+                }
+            });
+        </script>
+        <table>
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>&nbsp;</th>
+                    <th>Total spent in category</th>
+                    <th>&nbsp;</th>
+                    <th>Average spent in category</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in monthlyresults %}
+                <tr>
+                    <td>{{ row[1] }}</td>
+                    <td>&nbsp;</td>
+                    <td>{{ row[0] }}</td>
+                    <td>&nbsp;</td>
+                    <td>{{ row[0] / row[2] * 100|round(2) }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="half">
+        &nbsp;
+        <h3>Report for the year</h3>
+        <form id="yearForm">
+            <label for="year" method="GET" action="/year_report">Select Year:</label>
+            <input type="text" name="year" id="yearInput" />
+            <button type="submit">Get Summary</button>
+        </form>
+        <script>
+            var currentYear = new Date().getFullYear();
+            document.getElementById('yearInput').placeholder = currentYear;
+        </script>
+
+        <div id="summaryResult"></div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>&nbsp;</th>
+                    <th>Total spent in category</th>
+                    <th>&nbsp;</th>
+                    <th>Average spent in category</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in yearlyresults %}
+                <tr>
+                    <td>{{ row[1] }}</td>
+                    <td>&nbsp;</td>
+                    <td>{{ row[0] }}</td>
+                    <td>&nbsp;</td>
+                    <td>{{ row[0] / row[2] * 100|round(2) }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
 </html>

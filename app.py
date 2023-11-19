@@ -26,7 +26,6 @@ class Transaction(db.Model):
 
 with app.app_context():
     db.create_all()
-    
 
 @app.route('/')
 def homepage():
@@ -83,9 +82,21 @@ def edit_transaction():
 def report():
     trans = Transaction.query.all()
     selected_month = request.args.get('month')
-    sumsql = text('SELECT sum(amount), category FROM Transaction WHERE EXTRACT(MONTH FROM date) = :selected_month GROUP BY category')
+
+    if selected_month is None:
+        selected_month = datetime.now().month
+    sumsql = text('SELECT sum(amount), category, (select sum(amount) FROM Transaction WHERE EXTRACT(MONTH FROM date) = :selected_month) as total_amount FROM Transaction WHERE EXTRACT(MONTH FROM date) = :selected_month GROUP BY category')
     sumsql = sumsql.bindparams(selected_month=selected_month)
     with db.engine.connect() as conn:
         result = conn.execute(sumsql)
         grouped_sum_by_category = result.fetchall()
-    return render_template('report.html', trans=trans, results=grouped_sum_by_category, month=selected_month)
+
+    selected_year = request.args.get('year')
+    if selected_year is None:
+        selected_year = datetime.now().year
+    sumsql = text('SELECT sum(amount), category, (select sum(amount) FROM Transaction WHERE EXTRACT(YEAR FROM date) = :selected_year) as total_amount FROM Transaction WHERE EXTRACT(Year FROM date) = :selected_year GROUP BY category')
+    sumsql = sumsql.bindparams(selected_year=selected_year)
+    with db.engine.connect() as conn:
+        result = conn.execute(sumsql)
+        year_sum_by_category = result.fetchall()
+    return render_template('report.html', trans=trans, monthlyresults=grouped_sum_by_category, yearlyresults=year_sum_by_category, month=selected_month)
