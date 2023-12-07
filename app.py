@@ -48,9 +48,14 @@ def new_transaction():
                  date = datetime.strptime(date_str, '%Y-%m-%d').date()
             except ValueError:
                  return "Invalid date format"
-            new_transaction = Transaction(request.form['amount'], request.form['category'], request.form['name'], date=date)
-            db.session.add(new_transaction)
-            db.session.commit()
+
+            try:
+                new_transaction = Transaction(request.form['amount'], request.form['category'], request.form['name'], date=date)
+                db.session.add(new_transaction)
+                db.session.commit()
+            except Exception as e: 
+                db.session.rollback()
+                return "Failed to add transaction"
 
             return redirect(url_for('homepage'))
     return render_template('add_transaction.html') #, current_time=current_time)
@@ -67,22 +72,28 @@ def edit_transaction():
     transaction = Transaction.query.get(tran_id)
 
     if request.method == 'POST' and transaction:
-        transaction.amount = request.form['amount']
-        transaction.category = request.form['category']
         date_str = request.form['date']
         try:
             date = datetime.strptime(date_str, '%Y-%m-%d').date()
         except ValueError:
             return "Invalid date format"
         transaction.date = date
-        db.session.commit()
+        try:
+            transaction.amount = request.form['amount']
+            transaction.category = request.form['category']
+            transaction.date = date
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            return "Edit transaction error"
+
         return redirect(url_for('homepage'))
     
 @app.route('/report', methods=['GET', 'POST'])
 def report():
     trans = Transaction.query.all()
     selected_month = request.args.get('month')
-
+    selected_year = request.args.get('year')
     if selected_month is None:
         selected_month = datetime.now().month
     sumsql = text('SELECT sum(amount), category, (select sum(amount) FROM Transaction WHERE EXTRACT(MONTH FROM date) = :selected_month) as total_amount FROM Transaction WHERE EXTRACT(MONTH FROM date) = :selected_month GROUP BY category')
@@ -91,7 +102,6 @@ def report():
         result = conn.execute(sumsql)
         grouped_sum_by_category = result.fetchall()
 
-    selected_year = request.args.get('year')
     if selected_year is None:
         selected_year = datetime.now().year
     sumsql = text('SELECT sum(amount), category, (select sum(amount) FROM Transaction WHERE EXTRACT(YEAR FROM date) = :selected_year) as total_amount FROM Transaction WHERE EXTRACT(Year FROM date) = :selected_year GROUP BY category')
